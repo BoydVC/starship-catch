@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Starship Catch · Chopsticks Mission Control</title>
+<meta name="theme-color" content="#05070c">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<canvas id="bgStars" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="top">
+  <div class="brand">
+    <span class="crest" aria-hidden="true">
+      <svg viewBox="0 0 56 56" width="44" height="44">
+        <defs>
+          <linearGradient id="sxG" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#7ec8ff"/><stop offset="1" stop-color="#3a8fd6"/>
+          </linearGradient>
+        </defs>
+        <circle cx="28" cy="28" r="26" fill="#0a0e18" stroke="url(#sxG)" stroke-width="2.5"/>
+        <rect x="22" y="10" width="12" height="28" rx="2" fill="url(#sxG)" opacity=".9"/>
+        <path d="M16 38 L28 30 L40 38" fill="none" stroke="#7ec8ff" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="28" cy="44" r="3" fill="#ff6b3d"/>
+      </svg>
+    </span>
+    <div>
+      <h1>Chopsticks Mission Control</h1>
+      <p class="sub">Starship Catch Desk · Starbase SIM · Offline</p>
+    </div>
+  </div>
+  <div class="topmeta">
+    <span class="pill sim" id="simBadge">SIM</span>
+    <span class="pill soft" id="phasePill">APPROACH</span>
+    <span class="pill clock" id="simClock">T+00:00.0</span>
+    <button id="btnWall" class="ghost" title="Wall display mode">🖥 Wall</button>
+    <button id="btnHelp" class="ghost" title="About / shortcuts">❓</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Mission screens">
+  <button role="tab" class="tab on" data-tab="control" aria-selected="true">🎛 Mission Control</button>
+  <button role="tab" class="tab" data-tab="replay" aria-selected="false">▶ Catch Replay</button>
+  <button role="tab" class="tab" data-tab="tower" aria-selected="false">🏗 Tower Diagram</button>
+  <button role="tab" class="tab" data-tab="log" aria-selected="false">📋 Flight Log</button>
+  <button role="tab" class="tab" data-tab="desk" aria-selected="false">📝 Starbase Desk</button>
+</nav>
+
+<main class="stage">
+  <!-- MISSION CONTROL -->
+  <section id="panel-control" class="panel on" role="tabpanel">
+    <div class="mc-grid">
+      <div class="canvas-wrap">
+        <canvas id="mcCanvas" width="960" height="560"></canvas>
+        <div class="canvas-overlay">
+          <span class="big-sim">SIMULATION</span>
+          <span class="hud-tl" id="hudAlt">ALT —</span>
+          <span class="hud-tr" id="hudVel">VEL —</span>
+          <span class="hud-bl" id="hudOffset">OFFSET —</span>
+          <span class="hud-br" id="hudArms">ARMS —</span>
+        </div>
+      </div>
+      <aside class="mc-side">
+        <div class="card glow">
+          <h3>SIM Timeline</h3>
+          <input type="range" id="timeline" min="0" max="1000" value="0" aria-label="Scrub simulation timeline">
+          <div class="tl-labels"><span>Approach</span><span>Burn</span><span>Catch</span><span>Hold</span></div>
+          <div class="transport">
+            <button id="btnPlay" class="primary">▶ Play</button>
+            <button id="btnReset" class="ghost">↺ Reset</button>
+            <label class="speed"><span>Speed</span>
+              <select id="speedSel">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Phase</h3>
+          <ol class="phases" id="phaseList">
+            <li data-p="approach" class="on">1 · High approach</li>
+            <li data-p="burn">2 · Landing burn</li>
+            <li data-p="align">3 · Chopstick align</li>
+            <li data-p="catch">4 · Catch contact</li>
+            <li data-p="hold">5 · Tower hold</li>
+          </ol>
+        </div>
+        <div class="card soft">
+          <h3>Shortcuts</h3>
+          <p class="hint"><kbd>Space</kbd> play/pause · <kbd>R</kbd> reset · <kbd>1–5</kbd> tabs · <kbd>W</kbd> wall</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CATCH REPLAY -->
+  <section id="panel-replay" class="panel" role="tabpanel" hidden>
+    <div class="replay-hero">
+      <div class="canvas-wrap tall">
+        <canvas id="replayCanvas" width="1100" height="620"></canvas>
+        <div class="canvas-overlay">
+          <span class="big-sim">SIM REPLAY</span>
+          <span class="phase-banner" id="replayPhase">APPROACH</span>
+        </div>
+      </div>
+      <div class="replay-bar">
+        <button id="btnReplayPlay" class="primary">▶ Play</button>
+        <input type="range" id="replayScrub" min="0" max="1000" value="0" aria-label="Replay scrub">
+        <span id="replayTime" class="mono">0.0s / 28.0s</span>
+        <button id="btnSlowMo" class="ghost">Slow-mo</button>
+      </div>
+      <div class="phase-chips" id="phaseChips">
+        <span data-ph="approach">Approach</span>
+        <span data-ph="burn">Burn</span>
+        <span data-ph="align">Align</span>
+        <span data-ph="catch">Catch</span>
+        <span data-ph="hold">Hold</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOWER DIAGRAM -->
+  <section id="panel-tower" class="panel" role="tabpanel" hidden>
+    <div class="tower-grid">
+      <div class="canvas-wrap">
+        <canvas id="towerCanvas" width="700" height="640"></canvas>
+        <p class="cap">Click hotspots · public Mechazilla concepts (not proprietary drawings)</p>
+      </div>
+      <aside class="tower-info card glow" id="towerInfo">
+        <h3 id="hotTitle">Mechazilla Tower</h3>
+        <p id="hotBody">The orbital launch mount / catch tower at Starbase. Select a hotspot on the schematic to learn about publicly discussed catch hardware concepts.</p>
+        <ul class="hot-list" id="hotList"></ul>
+      </aside>
+    </div>
+  </section>
+
+  <!-- FLIGHT LOG -->
+  <section id="panel-log" class="panel" role="tabpanel" hidden>
+    <div class="card glow">
+      <div class="log-head">
+        <h2>Flight Log</h2>
+        <span class="pill sim">EXAMPLE DATA</span>
+      </div>
+      <p class="warn">These rows are <strong>EXAMPLE / placeholder</strong> catch-attempt narratives for offline demo only — not live telemetry and not a claim of official outcomes. Prefer verified public Flight Test names when you look them up yourself.</p>
+      <div class="table-wrap">
+        <table class="log-table" id="flightLog">
+          <thead>
+            <tr><th>ID</th><th>Label</th><th>Scenario</th><th>Phase focus</th><th>Outcome (EXAMPLE)</th><th>Notes</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- STARBASE DESK -->
+  <section id="panel-desk" class="panel" role="tabpanel" hidden>
+    <div class="desk-grid">
+      <div class="card glow">
+        <h2>What to watch next launch</h2>
+        <p class="hint">Personal checklist · saved in this browser (localStorage) · SIM desk, not flight ops</p>
+        <ul class="checklist" id="watchList"></ul>
+        <button id="btnResetChecks" class="ghost">Reset checklist</button>
+      </div>
+      <div class="card">
+        <h2>Starbase notes</h2>
+        <textarea id="deskNotes" rows="12" placeholder="Scratch notes for the next catch attempt… grid fins, chopsticks view, sonic boom timing…"></textarea>
+        <div class="desk-actions">
+          <button id="btnSaveNotes" class="primary">Save notes</button>
+          <span id="notesStatus" class="hint"></span>
+        </div>
+      </div>
+      <div class="card soft">
+        <h3>SIM countdown clock</h3>
+        <div class="countdown" id="countdown" aria-live="polite">
+          <div class="cd-unit"><span id="cdH">00</span><label>Hrs</label></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><span id="cdM">00</span><label>Min</label></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><span id="cdS">00</span><label>Sec</label></div>
+        </div>
+        <p class="hint">Decorative SIM clock looping a fictional T− window — not a real launch time.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>Chopsticks Mission Control · offline fan desk for Boyd</span>
+  <span class="sep">·</span>
+  <span>Not affiliated with SpaceX · all catch scenes are SIM / EXAMPLE</span>
+</footer>
+
+<dialog id="helpDlg">
+  <form method="dialog" class="help-card">
+    <h2>About this desk</h2>
+    <p>Offline Starship catch visualization for personal SpaceX interest. Canvas scenes are <strong>simulations</strong>. Flight log rows are <strong>examples</strong>. No live telemetry.</p>
+    <ul>
+      <li><kbd>Space</kbd> — play / pause active animation</li>
+      <li><kbd>R</kbd> — reset timeline</li>
+      <li><kbd>1</kbd>–<kbd>5</kbd> — switch screens</li>
+      <li><kbd>W</kbd> — wall mode</li>
+      <li><kbd>?</kbd> — this help</li>
+    </ul>
+    <button class="primary" value="ok">Got it</button>
+  </form>
+</dialog>
+
+<script>/*__APP__*/</script>
+</body>
+</html>
