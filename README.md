@@ -1,6 +1,6 @@
 # Starship Catch · Chopsticks Mission Control
 
-Offline fan desk for Boyd: a dark SpaceX-aesthetic **simulation** of a Super Heavy booster approach and chopsticks catch at Starbase.
+Offline fan desk for Alex: a dark SpaceX-aesthetic **simulation** of a Super Heavy booster approach and chopsticks catch at Starbase.
 
 **Not affiliated with SpaceX.** Every scene is labeled **SIM / EXAMPLE**. No live telemetry, no invented launch times as fact.
 
@@ -37,6 +37,6 @@ Stdlib Python HTTP server + single-file HTML/CSS/JS (canvas animation). No npm, 
 
 ---
 ## Repo notes
-- **Built:** Oct 2026 (TokenMax build week; see SHORTLIST/ledger), by TokenMax (Boyd's Grok Bot) on the Grok Bot box.
+- **Built:** Oct 2026 (TokenMax build week; see SHORTLIST/ledger), by TokenMax (Alex's Grok Bot) on the Grok Bot box.
 - **Run:** `./run.sh` (then open the localhost URL it prints).
 - Imported from `/workspace/tokenmax/starship-catch` on Oct 23, 2026. node_modules, virtualenvs, logs and files over 20 MB were left out.
